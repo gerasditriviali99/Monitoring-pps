@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analitik PPS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen py-6 px-4">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Dashboard Performa Toko</h1>
+                <p class="text-sm text-gray-500">Analisis metrik PPS dan produk fokus secara real-time</p>
+            </div>
+            <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition">
+                ← Kembali ke Form Input
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-xs font-semibold text-gray-400 uppercase">Total Sales (SPD)</p>
+                <p id="kpiSpd" class="text-xl font-bold text-gray-800 mt-1">Rp 0</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
+                <p class="text-xs font-semibold text-gray-400 uppercase">Total Transaksi (STD)</p>
+                <p id="kpiStd" class="text-xl font-bold text-gray-800 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                <p class="text-xs font-semibold text-gray-400 uppercase">Rata-rata APC</p>
+                <p id="kpiApc" class="text-xl font-bold text-gray-800 mt-1">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500">
+                <p class="text-xs font-semibold text-gray-400 uppercase">New Member</p>
+                <p id="kpiMember" class="text-xl font-bold text-gray-800 mt-1">0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase mb-4">Tren Harian SPD vs STD</h3>
+                <div class="relative h-64">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase mb-4">Akumulasi Penjualan Produk Fokus</h3>
+                <div class="relative h-64">
+                    <canvas id="productChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading" class="text-center text-gray-500 text-sm italic py-4">
+            Sedang memuat data dari Google Sheets...
+        </div>
+
+    </div>
+
+    <script>
+        // PASTE URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrYY30xFJK76lZD1sNjEsb1itZZIBfCssUrqd1FMTTwJM_xXqWH0rsTT7vbqy1PJp0/exec";
+
+        // Fungsi format Rupiah singkat
+        function formatRupiah(angka) {
+            return "Rp " + Number(angka).toLocaleString('id-ID');
+        }
+
+        // Ambil Data Saat Halaman Dibuka
+        fetch(WEB_APP_URL)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').classList.add('hidden');
+                if (data.length === 0) {
+                    document.getElementById('loading').innerText = "Belum ada data di Google Sheets.";
+                    document.getElementById('loading').classList.remove('hidden');
+                    return;
+                }
+
+                // --- 1. HITUNG DATA UNTUK KPI CARDS ---
+                let totalSpd = 0;
+                let totalStd = 0;
+                let totalApc = 0;
+                let totalMember = 0;
+
+                data.forEach(row => {
+                    totalSpd += Number(row.SPD || 0);
+                    totalStd += Number(row.STD || 0);
+                    totalApc += Number(row.APC || 0);
+                    totalMember += Number(row.New_Member || row["New Member"] || 0);
+                });
+
+                document.getElementById('kpiSpd').innerText = formatRupiah(totalSpd);
+                document.getElementById('kpiStd').innerText = totalStd.toLocaleString('id-ID');
+                document.getElementById('kpiApc').innerText = (totalApc / data.length).toFixed(2);
+                document.getElementById('kpiMember').innerText = totalMember.toLocaleString('id-ID');
+
+                // --- 2. PROSES DATA GRAFIK 1 (TREN HARIAN) ---
+                // Kelompokkan data berdasarkan tanggal (jika dalam 1 tanggal ada beberapa shift)
+                let groupedData = {};
+                data.forEach(row => {
+                    let tgl = row.Tanggal;
+                    if(!groupedData[tgl]) {
+                        groupedData[tgl] = { spd: 0, std: 0 };
+                    }
+                    groupedData[tgl].spd += Number(row.SPD || 0);
+                    groupedData[tgl].std += Number(row.STD || 0);
+                });
+
+                // Urutkan tanggal secara kronologis
+                let sortedDates = Object.keys(groupedData).sort();
+                let spdData = sortedDates.map(tgl => groupedData[tgl].spd);
+                let stdData = sortedDates.map(tgl => groupedData[tgl].std);
+
+                // Render Grafik 1
+                const ctxTrend = document.getElementById('trendChart').getContext('2d');
+                new Chart(ctxTrend, {
+                    type: 'line',
+                    data: {
+                        labels: sortedDates,
+                        datasets: [
+                            {
+                                label: 'SPD (Sales)',
+                                data: spdData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                yAxisID: 'ySpd',
+                                tension: 0.3
+                            },
+                            {
+                                label: 'STD (Transaksi)',
+                                data: stdData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                yAxisID: 'yStd',
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            ySpd: { type: 'linear', position: 'left', title: { display: true, text: 'Rupiah (SPD)' } },
+                            yStd: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Jumlah (STD)' } }
+                        }
+                    }
+                });
+
+                // --- 3. PROSES DATA GRAFIK 2 (PRODUK FOKUS) ---
+                let produkFokus = {
+                    PSM: 0, PWP: 0, "Serba Gratis": 0, Sueger: 0, Ceban: 0, Beanspot: 0
+                };
+
+                data.forEach(row => {
+                    produkFokus.PSM += Number(row.PSM || 0);
+                    produkFokus.PWP += Number(row.PWP || 0);
+                    produkFokus["Serba Gratis"] += Number(row["Serba Gratis"] || 0);
+                    produkFokus.Sueger += Number(row.Sueger || 0);
+                    produkFokus.Ceban += Number(row.Ceban || 0);
+                    produkFokus.Beanspot += Number(row.Beanspot || 0);
+                });
+
+                // Render Grafik 2
+                const ctxProduct = document.getElementById('productChart').getContext('2d');
+                new Chart(ctxProduct, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(produkFokus),
+                        datasets: [{
+                            label: 'Total Terjual',
+                            data: Object.values(produkFokus),
+                            backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+            })
+            .catch(error => {
+                console.error("Error mengambil data:", error);
+                document.getElementById('loading').innerText = "Gagal memuat data. Periksa pengaturan Web App Anda.";
+            });
+    </script>
+</body>
+</html>
