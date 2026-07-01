@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Analitik PPS</title>
+    <title>Dashboard Analitik & Target PPS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -12,38 +12,98 @@
     <div class="max-w-6xl mx-auto space-y-6">
         
         <div class="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm gap-4">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-800">Dashboard Performa Toko</h1>
-        <p class="text-sm text-gray-500">Analisis metrik PPS dan produk fokus secara real-time</p>
-    </div>
-    
-    <div class="flex gap-2 w-full md:w-auto">
-        <a href="index.html" class="text-center bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition flex-1 md:flex-none">
-            ← Input Data
-        </a>
-        <a href="leaderboard.html" class="text-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow flex-1 md:flex-none">
-            🏆 Leaderboard
-        </a>
-    </div>
-</div>
-
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Dashboard Performa Toko</h1>
+                <p class="text-sm text-gray-500">Analisis metrik PPS dan pencapaian target secara real-time</p>
+            </div>
+            
+            <div class="flex gap-2 w-full md:w-auto">
+                <a href="index.html" class="text-center bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition flex-1 md:flex-none">
+                    ← Input Data
+                </a>
+                <a href="leaderboard.html" class="text-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow flex-1 md:flex-none">
+                    🏆 Leaderboard
+                </a>
+            </div>
+        </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-xs font-semibold text-gray-400 uppercase">Total Sales (SPD)</p>
-                <p id="kpiSpd" class="text-xl font-bold text-gray-800 mt-1">Rp 0</p>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">Total Sales (SPD)</p>
+                    <p id="kpiSpd" class="text-xl font-bold text-gray-800 mt-1">Rp 0</p>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
-                <p class="text-xs font-semibold text-gray-400 uppercase">Total Transaksi (STD)</p>
-                <p id="kpiStd" class="text-xl font-bold text-gray-800 mt-1">0</p>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">Total Transaksi (STD)</p>
+                    <p id="kpiStd" class="text-xl font-bold text-gray-800 mt-1">0</p>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500">
-                <p class="text-xs font-semibold text-gray-400 uppercase">Rata-rata APC</p>
-                <p id="kpiApc" class="text-xl font-bold text-gray-800 mt-1">0</p>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-500 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">Rata-rata APC</p>
+                    <p id="kpiApc" class="text-xl font-bold text-gray-800 mt-1">Rp 0</p>
+                </div>
+                <div class="mt-2 flex items-center justify-between border-t pt-1 text-[11px] text-gray-500">
+                    <span>Target: Rp 58.000</span>
+                    <span id="apcBadge" class="font-bold px-1.5 py-0.5 rounded text-[9px]">Checking...</span>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500">
-                <p class="text-xs font-semibold text-gray-400 uppercase">New Member</p>
-                <p id="kpiMember" class="text-xl font-bold text-gray-800 mt-1">0</p>
+            <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-500 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase">New Member</p>
+                    <p id="kpiMember" class="text-xl font-bold text-gray-800 mt-1">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                🎯 Live Progress Target Produk Fokus (Periode Juli)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-amber-800 text-sm">Target PSM (1-7 Jul)</span>
+                        <span id="psmBadge" class="text-xs font-bold px-2 py-0.5 bg-amber-200 text-amber-800 rounded-full">0%</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Aktual: <strong id="psmAktual" class="text-gray-950">0</strong> / 950 Pcs</span>
+                        <span>Target Harian: 136</span>
+                    </div>
+                    <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                        <div id="psmBar" class="bg-amber-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 p-4 rounded-xl border border-red-200 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-red-800 text-sm">Target PWP (1-15 Jul)</span>
+                        <span id="pwpBadge" class="text-xs font-bold px-2 py-0.5 bg-red-200 text-red-800 rounded-full">0%</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Aktual: <strong id="pwpAktual" class="text-gray-950">0</strong> / 402 Pcs</span>
+                        <span>Target Harian: 27</span>
+                    </div>
+                    <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                        <div id="pwpBar" class="bg-red-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-purple-800 text-sm">Target Serba Gratis (1-15 Jul)</span>
+                        <span id="serbaBadge" class="text-xs font-bold px-2 py-0.5 bg-purple-200 text-purple-800 rounded-full">0%</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>Aktual: <strong id="serbaAktual" class="text-gray-950">0</strong> / 311 Pcs</span>
+                        <span>Target Harian: 21</span>
+                    </div>
+                    <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                        <div id="serbaBar" class="bg-purple-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -71,11 +131,16 @@
 
     <script>
         // PASTE URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrYY30xFJK76lZD1sNjEsb1itZZIBfCssUrqd1FMTTwJM_xXqWH0rsTT7vbqy1PJp0/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/library/d/1lFW1QqZAXZ4dm6vwh4GZi2nd6xww1tErIT0uk3DOhW98NPXMONe1zcoo/3";
 
-        // Fungsi format Rupiah singkat
+        // Definisi Angka Target Konstan
+        const TARGET_PSM_TOTAL = 950;
+        const TARGET_PWP_TOTAL = 402;
+        const TARGET_SERBA_TOTAL = 311;
+        const TARGET_APC_VALUE = 58000;
+
         function formatRupiah(angka) {
-            return "Rp " + Number(angka).toLocaleString('id-ID');
+            return "Rp " + Math.round(angka).toLocaleString('id-ID');
         }
 
         // Ambil Data Saat Halaman Dibuka
@@ -92,23 +157,62 @@
                 // --- 1. HITUNG DATA UNTUK KPI CARDS ---
                 let totalSpd = 0;
                 let totalStd = 0;
-                let totalApc = 0;
                 let totalMember = 0;
+
+                let produkFokus = {
+                    PSM: 0, PWP: 0, "Serba Gratis": 0, Sueger: 0, Ceban: 0, Beanspot: 0
+                };
 
                 data.forEach(row => {
                     totalSpd += Number(row.SPD || 0);
                     totalStd += Number(row.STD || 0);
-                    totalApc += Number(row.APC || 0);
                     totalMember += Number(row.New_Member || row["New Member"] || 0);
+
+                    produkFokus.PSM += Number(row.PSM || 0);
+                    produkFokus.PWP += Number(row.PWP || 0);
+                    produkFokus["Serba Gratis"] += Number(row["Serba Gratis"] || 0);
+                    produkFokus.Sueger += Number(row.Sueger || 0);
+                    produkFokus.Ceban += Number(row.Ceban || 0);
+                    produkFokus.Beanspot += Number(row.Beanspot || 0);
                 });
 
+                // Kalkulasi Real APC Toko (Total Sales / Total Transaksi)
+                let rataRataApc = totalStd > 0 ? (totalSpd / totalStd) : 0;
+
+                // Tampilkan ke kartu
                 document.getElementById('kpiSpd').innerText = formatRupiah(totalSpd);
                 document.getElementById('kpiStd').innerText = totalStd.toLocaleString('id-ID');
-                document.getElementById('kpiApc').innerText = (totalApc / data.length).toFixed(2);
+                document.getElementById('kpiApc').innerText = formatRupiah(rataRataApc);
                 document.getElementById('kpiMember').innerText = totalMember.toLocaleString('id-ID');
 
-                // --- 2. PROSES DATA GRAFIK 1 (TREN HARIAN) ---
-                // Kelompokkan data berdasarkan tanggal (jika dalam 1 tanggal ada beberapa shift)
+                // Verifikasi Target APC (Badge Status)
+                const apcBadge = document.getElementById('apcBadge');
+                if (rataRataApc >= TARGET_APC_VALUE) {
+                    apcBadge.innerText = "ACHIEVED";
+                    apcBadge.className = "font-bold px-1.5 py-0.5 rounded text-[9px] bg-green-100 text-green-800";
+                } else {
+                    apcBadge.innerText = "UNDER TARGET";
+                    apcBadge.className = "font-bold px-1.5 py-0.5 rounded text-[9px] bg-red-100 text-red-800";
+                }
+
+                // --- 2. HITUNG & UPDATE PROGRESS BAR TARGET ---
+                let psmPct = ((produkFokus.PSM / TARGET_PSM_TOTAL) * 100).toFixed(1);
+                let pwpPct = ((produkFokus.PWP / TARGET_PWP_TOTAL) * 100).toFixed(1);
+                let serbaPct = ((produkFokus["Serba Gratis"] / TARGET_SERBA_TOTAL) * 100).toFixed(1);
+
+                document.getElementById('psmAktual').innerText = produkFokus.PSM.toLocaleString('id-ID');
+                document.getElementById('pwpAktual').innerText = produkFokus.PWP.toLocaleString('id-ID');
+                document.getElementById('serbaAktual').innerText = produkFokus["Serba Gratis"].toLocaleString('id-ID');
+
+                document.getElementById('psmBadge').innerText = psmPct + "%";
+                document.getElementById('pwpBadge').innerText = pwpPct + "%";
+                document.getElementById('serbaBadge').innerText = serbaPct + "%";
+
+                document.getElementById('psmBar').style.width = Math.min(psmPct, 100) + "%";
+                document.getElementById('pwpBar').style.width = Math.min(pwpPct, 100) + "%";
+                document.getElementById('serbaBar').style.width = Math.min(serbaPct, 100) + "%";
+
+                // --- 3. PROSES DATA GRAFIK 1 (TREN HARIAN) ---
                 let groupedData = {};
                 data.forEach(row => {
                     let tgl = row.Tanggal;
@@ -119,12 +223,10 @@
                     groupedData[tgl].std += Number(row.STD || 0);
                 });
 
-                // Urutkan tanggal secara kronologis
                 let sortedDates = Object.keys(groupedData).sort();
                 let spdData = sortedDates.map(tgl => groupedData[tgl].spd);
                 let stdData = sortedDates.map(tgl => groupedData[tgl].std);
 
-                // Render Grafik 1
                 const ctxTrend = document.getElementById('trendChart').getContext('2d');
                 new Chart(ctxTrend, {
                     type: 'line',
@@ -159,21 +261,7 @@
                     }
                 });
 
-                // --- 3. PROSES DATA GRAFIK 2 (PRODUK FOKUS) ---
-                let produkFokus = {
-                    PSM: 0, PWP: 0, "Serba Gratis": 0, Sueger: 0, Ceban: 0, Beanspot: 0
-                };
-
-                data.forEach(row => {
-                    produkFokus.PSM += Number(row.PSM || 0);
-                    produkFokus.PWP += Number(row.PWP || 0);
-                    produkFokus["Serba Gratis"] += Number(row["Serba Gratis"] || 0);
-                    produkFokus.Sueger += Number(row.Sueger || 0);
-                    produkFokus.Ceban += Number(row.Ceban || 0);
-                    produkFokus.Beanspot += Number(row.Beanspot || 0);
-                });
-
-                // Render Grafik 2
+                // --- 4. RENDER GRAFIK 2 (PRODUK FOKUS) ---
                 const ctxProduct = document.getElementById('productChart').getContext('2d');
                 new Chart(ctxProduct, {
                     type: 'bar',
