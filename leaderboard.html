@@ -29,7 +29,7 @@
 
         <div class="flex justify-center bg-white p-2 rounded-xl shadow-sm max-w-md mx-auto">
             <button id="btnFilterProduk" onclick="switchLeaderboard('produk')" class="w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition bg-amber-500 text-white shadow">
-                🔥 Produk Fokus
+                🔥 Pencapaian Fokus
             </button>
             <button id="btnFilterMember" onclick="switchLeaderboard('member')" class="w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition text-gray-600 hover:bg-gray-100">
                 💳 New Member
@@ -74,7 +74,7 @@
                         <tr class="bg-gray-100 text-gray-600 text-xs uppercase font-semibold">
                             <th class="py-3 px-4 text-center w-16">Rank</th>
                             <th class="py-3 px-4">Nama Staf</th>
-                            <th id="tableHeaderScore" class="py-3 px-4 text-right">Total Produk Terjual</th>
+                            <th id="tableHeaderScore" class="py-3 px-4 text-right">Total Skor (%)</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboardRows" class="text-gray-700 text-sm divide-y">
@@ -93,6 +93,14 @@
         // PASTE URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrYY30xFJK76lZD1sNjEsb1itZZIBfCssUrqd1FMTTwJM_xXqWH0rsTT7vbqy1PJp0/exec";
         
+        // PENTING: Atur target bulanan/mingguan toko di sini untuk perhitungan persentase
+        const TARGET = {
+            PSM: 950,           // Contoh: Target 100 Pcs
+            PWP: 402,            // Contoh: Target 40 Struk
+            SerbaGratis: 311,    // Contoh: Target 50 Promo
+            APC: 70000          // Contoh: Target APC Rp 35.000
+        };
+
         let globalData = [];
         let currentMode = 'produk'; // Default mode ranking
 
@@ -119,7 +127,7 @@
             if(mode === 'produk') {
                 btnProduk.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition bg-amber-500 text-white shadow";
                 btnMember.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition text-gray-600 hover:bg-gray-100";
-                document.getElementById('tableHeaderScore').innerText = "Total Produk Terjual";
+                document.getElementById('tableHeaderScore').innerText = "Total Skor (%)";
             } else {
                 btnMember.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition bg-purple-600 text-white shadow";
                 btnProduk.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition text-gray-600 hover:bg-gray-100";
@@ -132,59 +140,77 @@
         function renderLeaderboard() {
             if (globalData.length === 0) return;
 
-            // 1. Proses Akumulasi Data Berdasarkan Nama Staf
-            let staffScores = {};
+            // 1. Kumpulkan Data Aktual (Penjumlahan) Berdasarkan Nama Staf
+            let staffData = {};
 
             globalData.forEach(row => {
                 let nama = row.Staf || "Unknown";
-                // Bersihkan spasi berlebih dan buat format nama seragam (Capitalize)
                 nama = nama.trim().toUpperCase(); 
 
-                if (!staffScores[nama]) {
-                    staffScores[nama] = { name: nama, produk: 0, member: 0 };
+                if (!staffData[nama]) {
+                    staffData[nama] = { 
+                        name: nama, 
+                        aktualPSM: 0, 
+                        aktualPWP: 0, 
+                        aktualGratis: 0, 
+                        aktualAPC: 0, 
+                        member: 0 
+                    };
                 }
 
-                // Kalkulasi total produk fokus (PSM + PWP + Serba Gratis + Sueger + Ceban + Beanspot)
-                let totalProdukRow = Number(row.PSM || 0) + 
-                                     Number(row.PWP || 0) + 
-                                     Number(row["Serba Gratis"] || 0) + 
-                                     Number(row.Sueger || 0) + 
-                                     Number(row.Ceban || 0) + 
-                                     Number(row.Beanspot || 0);
+                // Kumpulkan nilai aktual
+                staffData[nama].aktualPSM += Number(row.PSM || 0);
+                staffData[nama].aktualPWP += Number(row.PWP || 0);
+                staffData[nama].aktualGratis += Number(row["Serba Gratis"] || 0);
                 
-                let totalMemberRow = Number(row.New_Member || row["New Member"] || 0);
-
-                staffScores[nama].produk += totalProdukRow;
-                staffScores[nama].member += totalMemberRow;
+                // Khusus APC: Jika setiap baris adalah rangkuman, gunakan nilai APC terbaru.
+                // Jika dari banyak struk, logic-nya perlu disesuaikan. Kita asumsikan nilainya disediakan per staf.
+                staffData[nama].aktualAPC = Number(row.APC || staffData[nama].aktualAPC); 
+                
+                staffData[nama].member += Number(row.New_Member || row["New Member"] || 0);
             });
 
-            // Converted object ke array agar bisa di-sorting
-            let sortedStaff = Object.values(staffScores);
+            // 2. Hitung Persentase Bobot Akhir
+            let sortedStaff = Object.values(staffData).map(staf => {
+                
+                // Rumus: (Aktual / Target) * 100 * Bobot
+                let poinPSM = (staf.aktualPSM / TARGET.PSM) * 100 * 0.20;
+                let poinPWP = (staf.aktualPWP / TARGET.PWP) * 100 * 0.25;
+                let poinGratis = (staf.aktualGratis / TARGET.SerbaGratis) * 100 * 0.30;
+                let poinAPC = (staf.aktualAPC / TARGET.APC) * 100 * 0.25;
 
-            // Sorting berdasarkan pilihan mode (produk fokus atau member)
+                // Tangani hasil NaN/Infinity jika target di set 0 secara tidak sengaja
+                let totalSkorPersen = (poinPSM + poinPWP + poinGratis + poinAPC) || 0;
+                
+                // Simpan skor akhir
+                staf.skorProduk = totalSkorPersen; 
+                return staf;
+            });
+
+            // 3. Sorting berdasarkan pilihan mode
             if(currentMode === 'produk') {
-                sortedStaff.sort((a, b) => b.produk - a.produk);
+                sortedStaff.sort((a, b) => b.skorProduk - a.skorProduk);
             } else {
                 sortedStaff.sort((a, b) => b.member - a.member);
             }
 
-            // 2. TAMPILKAN KE PODIUM (TOP 3)
-            const p1 = sortedStaff[0] || { name: "-", produk: 0, member: 0 };
-            const p2 = sortedStaff[1] || { name: "-", produk: 0, member: 0 };
-            const p3 = sortedStaff[2] || { name: "-", produk: 0, member: 0 };
+            // 4. TAMPILKAN KE PODIUM (TOP 3)
+            const p1 = sortedStaff[0] || { name: "-", skorProduk: 0, member: 0 };
+            const p2 = sortedStaff[1] || { name: "-", skorProduk: 0, member: 0 };
+            const p3 = sortedStaff[2] || { name: "-", skorProduk: 0, member: 0 };
 
-            const unit = currentMode === 'produk' ? ' Pcs' : ' Orang';
+            const unit = currentMode === 'produk' ? '%' : ' Orang';
 
             document.getElementById('p1Name').innerText = p1.name;
-            document.getElementById('p1Score').innerText = (currentMode === 'produk' ? p1.produk : p1.member) + unit;
+            document.getElementById('p1Score').innerText = (currentMode === 'produk' ? p1.skorProduk.toFixed(2) : p1.member) + unit;
 
             document.getElementById('p2Name').innerText = p2.name;
-            document.getElementById('p2Score').innerText = (currentMode === 'produk' ? p2.produk : p2.member) + unit;
+            document.getElementById('p2Score').innerText = (currentMode === 'produk' ? p2.skorProduk.toFixed(2) : p2.member) + unit;
 
             document.getElementById('p3Name').innerText = p3.name;
-            document.getElementById('p3Score').innerText = (currentMode === 'produk' ? p3.produk : p3.member) + unit;
+            document.getElementById('p3Score').innerText = (currentMode === 'produk' ? p3.skorProduk.toFixed(2) : p3.member) + unit;
 
-            // 3. TAMPILKAN KE TABEL LENGKAP
+            // 5. TAMPILKAN KE TABEL LENGKAP
             const tableBody = document.getElementById('leaderboardRows');
             tableBody.innerHTML = ""; // Reset isi tabel lama
 
@@ -197,13 +223,13 @@
                 if(index === 1) bgRow = "bg-slate-50/50 hover:bg-slate-50";
                 if(index === 2) bgRow = "bg-orange-50/50 hover:bg-orange-50";
 
-                let skorTampil = currentMode === 'produk' ? staf.produk : staf.member;
+                let skorTampil = currentMode === 'produk' ? staf.skorProduk.toFixed(2) : staf.member;
 
                 let rowHtml = `
                     <tr class="${bgRow} transition">
                         <td class="py-3 px-4 text-center font-bold text-gray-500">${rankDisplay}</td>
                         <td class="py-3 px-4 font-medium text-gray-800">${staf.name}</td>
-                        <td class="py-3 px-4 text-right font-bold text-blue-600">${skorTampil.toLocaleString('id-ID')}${unit}</td>
+                        <td class="py-3 px-4 text-right font-bold text-blue-600">${skorTampil}${unit}</td>
                     </tr>
                 `;
                 tableBody.innerHTML += rowHtml;
