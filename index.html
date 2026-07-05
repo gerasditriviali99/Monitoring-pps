@@ -10,16 +10,17 @@
 
     <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
         <div class="flex justify-end gap-2 mb-4">
-    <a href="dashboard.html" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">📊 Dashboard</a>
-    <a href="leaderboard.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">🏆 Leaderboard</a>
-</div>
+            <a href="dashboard.html" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">📊 Dashboard</a>
+            <a href="leaderboard.html" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">🏆 Leaderboard</a>
+        </div>
+        
         <h2 class="text-2xl font-bold text-center text-blue-600 mb-6 uppercase tracking-wider">Form Input Monitoring PPS</h2>
         
         <div class="flex justify-end mb-4">
-    <a href="dashboard.html" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">
-        👁️ Lihat Dashboard Analitik
-    </a>
-</div>
+            <a href="dashboard.html" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow">
+                👁️ Lihat Dashboard Analitik
+            </a>
+        </div>
 
         <form id="ppsForm" class="space-y-6">
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -54,15 +55,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">SPD (Sales Per Day)</label>
-                        <input type="number" id="spd" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
+                        <input type="number" id="spd" min="0" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">STD (Service Trans. Daily)</label>
-                        <input type="number" id="std" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
+                        <input type="number" id="std" min="0" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">APC</label>
-                        <input type="number" step="0.01" id="apc" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">APC (Otomatis)</label>
+                        <input type="number" step="0.01" id="apc" placeholder="0" required readonly class="w-full p-2 border rounded-md bg-gray-100 text-gray-600 focus:outline-none cursor-not-allowed">
                     </div>
                 </div>
             </div>
@@ -72,27 +73,27 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">PSM</label>
-                        <input type="number" id="psm" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <input type="number" id="psm" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">PWP</label>
-                        <input type="number" id="pwp" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <input type="number" id="pwp" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Serba Gratis</label>
-                        <input type="number" id="serbaGratis" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <input type="number" id="serbaGratis" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Sueger</label>
-                        <input type="number" id="sueger" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <input type="number" id="sueger" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Ceban</label>
-                        <input type="number" id="ceban" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <input type="number" id="ceban" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Beanspot</label>
-                        <input type="number" id="beanspot" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
+                        <input type="number" id="beanspot" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-yellow-400 outline-none">
                     </div>
                 </div>
             </div>
@@ -102,15 +103,37 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">New Member</label>
-                        <input type="number" id="newMember" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none">
+                        <input type="number" id="newMember" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">STD Member</label>
-                        <input type="number" id="stdMember" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none">
+                        <input type="number" id="stdMember" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">NPS</label>
-                        <input type="number" id="nps" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none">
+                        <input type="number" id="nps" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-purple-400 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                <h3 class="text-sm font-semibold text-red-700 uppercase mb-3">5. Monitoring Market Retur</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Kategori Retur</label>
+                        <select id="kategoriRetur" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-red-400 outline-none">
+                            <option value="-">Tidak Ada Retur</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Rusak/Cacat">Rusak/Cacat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nomor faktur</label>
+                        <input type="text" id="nomorfakturRetur" placeholder="Contoh: R-G26-0001" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-red-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nilai Retur (Rp)</label>
+                        <input type="number" id="nilaiRetur" min="0" placeholder="0" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-red-400 outline-none">
                     </div>
                 </div>
             </div>
@@ -125,6 +148,25 @@
         // GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT ANDA!
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrYY30xFJK76lZD1sNjEsb1itZZIBfCssUrqd1FMTTwJM_xXqWH0rsTT7vbqy1PJp0/exec";
 
+        // Fitur Auto-Calculate APC
+        const inputSPD = document.getElementById('spd');
+        const inputSTD = document.getElementById('std');
+        const inputAPC = document.getElementById('apc');
+
+        function hitungAPC() {
+            const spd = parseFloat(inputSPD.value) || 0;
+            const std = parseFloat(inputSTD.value) || 0;
+            if (std > 0) {
+                inputAPC.value = (spd / std).toFixed(2);
+            } else {
+                inputAPC.value = 0;
+            }
+        }
+
+        inputSPD.addEventListener('input', hitungAPC);
+        inputSTD.addEventListener('input', hitungAPC);
+
+        // Proses Submit Data
         document.getElementById('ppsForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -133,7 +175,7 @@
             btnSubmit.innerText = "Sedang Menyimpan...";
             btnSubmit.className = "w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed";
 
-            // Mengumpulkan data dari semua input form
+            // Mengumpulkan data dari semua input form termasuk Retur
             const formData = {
                 tanggal: document.getElementById('tanggal').value,
                 shift: document.getElementById('shift').value,
@@ -147,24 +189,28 @@
                 serbaGratis: Number(document.getElementById('serbaGratis').value || 0),
                 sueger: Number(document.getElementById('sueger').value || 0),
                 ceban: Number(document.getElementById('ceban').value || 0),
+                beanspot: Number(document.getElementById('beanspot').value || 0),
                 newMember: Number(document.getElementById('newMember').value || 0),
                 stdMember: Number(document.getElementById('stdMember').value || 0),
-                beanspot: Number(document.getElementById('beanspot').value || 0),
-                nps: Number(document.getElementById('nps').value || 0)
+                nps: Number(document.getElementById('nps').value || 0),
+                kategoriRetur: document.getElementById('kategoriRetur').value, // Data Retur Baru
+                produkRetur: document.getElementById('produkRetur').value || "-", // Data Produk Retur Baru
+                nilaiRetur: Number(document.getElementById('nilaiRetur').value || 0) // Data Nilai Retur Baru
             };
 
-            // Mengirim data ke Google Sheets melalui API Apps Script
+            // Mengirim data ke Google Sheets
             fetch(WEB_APP_URL, {
                 method: "POST",
-                mode: "no-cors", // Menggunakan no-cors karena keterbatasan Apps Script
+                mode: "no-cors",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(formData)
             })
             .then(() => {
-                alert("Data Berhasil Disimpan ke Google Sheets!");
+                alert("DONE!");
                 document.getElementById('ppsForm').reset();
+                inputAPC.value = ""; // Reset APC manual karena readonly
             })
             .catch(error => {
                 console.error("Error:", error);
