@@ -123,6 +123,48 @@
                 </div>
             </div>
 
+            <!-- Monitoring Market Retur -->
+            <div class="bg-red-50 p-6 rounded-xl shadow-sm border border-red-200">
+                <h3 class="text-sm font-bold text-red-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    📉 Analisis Market Retur
+                </h3>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 1. KPI Retur -->
+                    <div class="flex flex-col gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-red-500 relative overflow-hidden">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Total Nilai Retur</p>
+                            <p id="kpiRetur" class="text-2xl font-bold text-red-600 mt-1">Rp 0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-orange-400">
+                            <p class="text-xs font-semibold text-gray-500 uppercase">Rasio Retur vs Sales</p>
+                            <div class="flex items-end gap-2 mt-1">
+                                <p id="kpiRasioRetur" class="text-2xl font-bold text-orange-600">0%</p>
+                                <p class="text-[10px] text-gray-500 mb-1">Batas aman: < 1%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 2. Chart Kategori Retur -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex flex-col justify-center">
+                        <h4 class="text-xs font-semibold text-gray-600 mb-2 text-center uppercase">Proporsi Retur Berdasarkan Kategori</h4>
+                        <div class="relative h-40 w-full flex justify-center">
+                            <canvas id="returChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 3. Template Report WhatsApp/Telegram (BARU) -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex flex-col">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-xs font-semibold text-gray-600 uppercase">📋 Template Report Retur</h4>
+                            <button onclick="salinTeksRetur()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] py-1 px-2.5 rounded transition shadow flex items-center gap-1">
+                                📑 Salin Teks
+                            </button>
+                        </div>
+                        <textarea id="textTemplateRetur" readonly class="w-full text-[11px] font-mono p-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 h-36 focus:outline-none resize-none shadow-inner"></textarea>
+                    </div>
+                </div>
+            </div>
+
             <!-- Progress Target -->
             <div class="bg-white p-6 rounded-xl shadow-sm space-y-4">
                 <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
@@ -196,13 +238,15 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrYY30xFJK76lZD1sNjEsb1itZZIBfCssUrqd1FMTTwJM_xXqWH0rsTT7vbqy1PJp0/exec";
 
-        // Definisi Angka Target Konstan
+        // --- KONFIGURASI NAMA & KODE TOKO ---
+        const NAMA_TOKO = "JATILAWANG";
+        const KODE_TOKO = "I369";
+
         const TARGET_PSM_TOTAL = 950;
         const TARGET_PWP_TOTAL = 402;
         const TARGET_SERBA_TOTAL = 311;
         const TARGET_APC_VALUE = 58000;
 
-        // Bobot Skor
         const WEIGHT_PSM = 20;
         const WEIGHT_PWP = 25;
         const WEIGHT_APC = 25;
@@ -211,81 +255,104 @@
         let allData = []; 
         let trendChartInstance = null;
         let productChartInstance = null;
+        let returChartInstance = null; 
 
         function formatRupiah(angka) {
             return "Rp " + Math.round(angka).toLocaleString('id-ID');
         }
 
+        // Fungsi khusus formatting tanggal ke format Indonesia (e.g., 4 Juli 2026)
+        function formatTanggalIndo(dateStr) {
+            if (!dateStr) return "";
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function formatDateLocal(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function pasangTanggalDefault() {
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('startDate').value = formatDateLocal(firstDayOfMonth);
+            document.getElementById('endDate').value = formatDateLocal(today);
+        }
+
         function loadData() {
+            if (!document.getElementById('startDate').value || !document.getElementById('endDate').value) {
+                pasangTanggalDefault();
+            }
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('dataContainer').classList.add('hidden');
 
-            fetch(WEB_APP_URL)
+            const urlDenganFilter = `${WEB_APP_URL}?startDate=${startDate}&endDate=${endDate}`;
+
+            fetch(urlDenganFilter)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('loading').classList.add('hidden');
-                    
-                    if (data.length === 0) {
-                        alert("Belum ada data di Google Sheets.");
-                        return;
-                    }
-                    
-                    allData = data; 
                     document.getElementById('dataContainer').classList.remove('hidden');
-                    prosesData(allData);
+                    prosesData(data);
                 })
                 .catch(error => {
                     console.error("Error mengambil data:", error);
-                    alert("Gagal memuat data. Periksa koneksi internet atau URL Web App Anda.");
+                    alert("Gagal memuat data operasional.");
                     document.getElementById('loading').innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data. Silakan coba lagi.</p>`;
                 });
         }
 
         function applyFilter() {
-            const startDateValue = document.getElementById('startDate').value;
-            const endDateValue = document.getElementById('endDate').value;
-
-            if (!startDateValue || !endDateValue) {
+            if (!document.getElementById('startDate').value || !document.getElementById('endDate').value) {
                 alert("Silakan pilih Tanggal Mulai dan Tanggal Akhir.");
                 return;
             }
-
-            const startDate = new Date(startDateValue);
-            startDate.setHours(0, 0, 0, 0); 
-            
-            const endDate = new Date(endDateValue);
-            endDate.setHours(23, 59, 59, 999);
-
-            const filteredData = allData.filter(row => {
-                const rowDate = new Date(row.Tanggal);
-                return rowDate >= startDate && rowDate <= endDate;
-            });
-
-            if (filteredData.length === 0) {
-                alert("Tidak ada data pada rentang tanggal yang dipilih.");
-                return;
-            }
-
-            prosesData(filteredData);
+            loadData();
         }
 
         function resetFilter() {
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            prosesData(allData); 
+            pasangTanggalDefault();
+            loadData(); 
         }
 
         function prosesData(data) {
             let totalSpd = 0;
             let totalStd = 0;
             let totalMember = 0;
+            let totalRetur = 0; 
 
             let produkFokus = {
                 PSM: 0, PWP: 0, "Serba Gratis": 0, Sueger: 0, Ceban: 0, Beanspot: 0
             };
+            
+            let dataReturKategori = {}; 
+
+            // --- STRUKTUR FORMAT GENERATOR TEMPLATE ---
+            const startDateVal = document.getElementById('startDate').value;
+            const endDateVal = document.getElementById('endDate').value;
+            let tglText = "";
+            
+            if (startDateVal && endDateVal) {
+                const startStr = formatTanggalIndo(startDateVal);
+                const endStr = formatTanggalIndo(endDateVal);
+                tglText = (startStr === endStr) ? startStr : `${startStr} - ${endStr}`;
+            } else {
+                tglText = formatTanggalIndo(new Date());
+            }
+
+            let templateText = `Tgl : ${tglText}\nNama Toko : ${NAMA_TOKO}\nKode toko   : ${KODE_TOKO}\n\n`;
+            let indexReturText = 1;
 
             data.forEach(row => {
-                totalSpd += Number(row.SPD || 0);
+                let spd = Number(row.SPD || 0);
+                totalSpd += spd;
                 totalStd += Number(row.STD || 0);
                 totalMember += Number(row.New_Member || row["New Member"] || 0);
 
@@ -295,11 +362,38 @@
                 produkFokus.Sueger += Number(row.Sueger || 0);
                 produkFokus.Ceban += Number(row.Ceban || 0);
                 produkFokus.Beanspot += Number(row.Beanspot || 0);
+
+                // --- DATA RETUR ---
+                let nilaiRetur = Number(row.nilaiRetur || row["Nilai Retur"] || row.Nilai_Retur || 0);
+                let kategori = row.kategoriRetur || row["Kategori Retur"] || row.Kategori_Retur || "-";
+                let produk = row.produkRetur || row["Produk Retur"] || row.Produk_Retur || "-";
+
+                // Map opsi panjang UI form menjadi singkatan teks rapi "BKE"
+                if (kategori === "Rusak/Cacat / BKE") {
+                    kategori = "BKE";
+                }
+
+                if (nilaiRetur > 0 && kategori !== "-") {
+                    totalRetur += nilaiRetur;
+                    dataReturKategori[kategori] = (dataReturKategori[kategori] || 0) + nilaiRetur;
+
+                    // Mengisi daftar item ke template text (tanpa kata Rp, ribuan dipisah titik)
+                    let nilaiFormatted = Math.round(nilaiRetur).toLocaleString('id-ID');
+                    templateText += `${indexReturText}. (${kategori}) ${produk} ${nilaiFormatted}\n`;
+                    indexReturText++;
+                }
             });
 
-            // 1. Kalkulasi Real APC Toko & Update KPI Card
-            let rataRataApc = totalStd > 0 ? (totalSpd / totalStd) : 0;
+            // Penyelesaian output teks template
+            if (indexReturText === 1) {
+                templateText += "Tidak ada data retur pada periode ini.\n";
+            } else {
+                templateText += `*TOTAL : ${Math.round(totalRetur).toLocaleString('id-ID')}*`;
+            }
+            document.getElementById('textTemplateRetur').value = templateText;
 
+            // 1. Update KPI Standar & Real APC
+            let rataRataApc = totalStd > 0 ? (totalSpd / totalStd) : 0;
             document.getElementById('kpiSpd').innerText = formatRupiah(totalSpd);
             document.getElementById('kpiStd').innerText = totalStd.toLocaleString('id-ID');
             document.getElementById('kpiApc').innerText = formatRupiah(rataRataApc);
@@ -314,36 +408,36 @@
                 apcBadge.className = "font-bold px-1.5 py-0.5 rounded text-[9px] bg-red-100 text-red-800";
             }
 
-            // 2. KALKULASI SKOR PPS AKTUAL (Dihitung murni tanpa dibatasi 100%)
-            let scorePsm = (produkFokus.PSM / TARGET_PSM_TOTAL) * WEIGHT_PSM;
-            let scorePwp = (produkFokus.PWP / TARGET_PWP_TOTAL) * WEIGHT_PWP;
-            let scoreApc = (rataRataApc / TARGET_APC_VALUE) * WEIGHT_APC;
-            let scoreSerba = (produkFokus["Serba Gratis"] / TARGET_SERBA_TOTAL) * WEIGHT_SERBA;
+            // 2. Update KPI Panel Market Retur
+            document.getElementById('kpiRetur').innerText = formatRupiah(totalRetur);
+            let rasioRetur = totalSpd > 0 ? ((totalRetur / totalSpd) * 100).toFixed(2) : 0;
+            let elRasio = document.getElementById('kpiRasioRetur');
+            elRasio.innerText = rasioRetur + "%";
+            
+            if (rasioRetur > 1) {
+                elRasio.className = "text-2xl font-bold text-red-600"; 
+            } else {
+                elRasio.className = "text-2xl font-bold text-green-600";
+            }
 
-            // Jika ada yang belum jualan (menghindari NaN jika data kosong)
-            scorePsm = scorePsm || 0;
-            scorePwp = scorePwp || 0;
-            scoreApc = scoreApc || 0;
-            scoreSerba = scoreSerba || 0;
-
+            // 3. Kalkulasi Skor PPS Aktual
+            let scorePsm = (produkFokus.PSM / TARGET_PSM_TOTAL) * WEIGHT_PSM || 0;
+            let scorePwp = (produkFokus.PWP / TARGET_PWP_TOTAL) * WEIGHT_PWP || 0;
+            let scoreApc = (rataRataApc / TARGET_APC_VALUE) * WEIGHT_APC || 0;
+            let scoreSerba = (produkFokus["Serba Gratis"] / TARGET_SERBA_TOTAL) * WEIGHT_SERBA || 0;
             let totalScore = scorePsm + scorePwp + scoreApc + scoreSerba;
 
-            // Update UI Skor
             document.getElementById('totalScoreVal').innerText = totalScore.toFixed(1);
-            
-            // Format rincian agar menampilkan kelebihan (misal: 22.5 / 20)
             document.getElementById('scorePsm').innerText = scorePsm.toFixed(1);
             document.getElementById('scorePwp').innerText = scorePwp.toFixed(1);
             document.getElementById('scoreApc').innerText = scoreApc.toFixed(1);
             document.getElementById('scoreSerba').innerText = scoreSerba.toFixed(1);
 
-            // Warna nilai per item (hijau jika tembus target bobot, merah/putih jika defisit)
             document.getElementById('scorePsm').className = scorePsm >= WEIGHT_PSM ? "text-green-300" : "text-white";
             document.getElementById('scorePwp').className = scorePwp >= WEIGHT_PWP ? "text-green-300" : "text-white";
             document.getElementById('scoreApc').className = scoreApc >= WEIGHT_APC ? "text-green-300" : "text-white";
             document.getElementById('scoreSerba').className = scoreSerba >= WEIGHT_SERBA ? "text-green-300" : "text-white";
 
-            // Ganti warna status berdasarkan total skor
             const scoreStatus = document.getElementById('scoreStatus');
             if (totalScore >= 100) {
                 scoreStatus.innerText = "🔥 OVER TARGET";
@@ -359,7 +453,7 @@
                 scoreStatus.className = "text-xs font-bold text-red-800 mt-1 bg-red-300 px-3 py-1 rounded-full text-center inline-block";
             }
 
-            // 3. HITUNG & UPDATE PROGRESS BAR
+            // 4. Update Progress Bar
             let psmPct = ((produkFokus.PSM / TARGET_PSM_TOTAL) * 100).toFixed(1);
             let pwpPct = ((produkFokus.PWP / TARGET_PWP_TOTAL) * 100).toFixed(1);
             let serbaPct = ((produkFokus["Serba Gratis"] / TARGET_SERBA_TOTAL) * 100).toFixed(1);
@@ -378,15 +472,12 @@
                 document.getElementById('serbaBar').style.width = Math.min(serbaPct, 100) + "%";
             }, 50);
 
-            // 4. PROSES DATA GRAFIK 1 (TREN HARIAN)
+            // 5. Render Grafik Harian
             let groupedData = {};
             data.forEach(row => {
                 let dateObj = new Date(row.Tanggal);
                 let tgl = isNaN(dateObj) ? row.Tanggal : dateObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
-                
-                if(!groupedData[tgl]) {
-                    groupedData[tgl] = { spd: 0, std: 0 };
-                }
+                if(!groupedData[tgl]) groupedData[tgl] = { spd: 0, std: 0 };
                 groupedData[tgl].spd += Number(row.SPD || 0);
                 groupedData[tgl].std += Number(row.STD || 0);
             });
@@ -396,93 +487,78 @@
             let stdData = sortedDates.map(tgl => groupedData[tgl].std);
 
             if (trendChartInstance) trendChartInstance.destroy();
-            
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             trendChartInstance = new Chart(ctxTrend, {
                 type: 'line',
                 data: {
                     labels: sortedDates,
                     datasets: [
-                        {
-                            label: 'SPD (Sales)',
-                            data: spdData,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            yAxisID: 'ySpd',
-                            tension: 0.3,
-                            fill: true
-                        },
-                        {
-                            label: 'STD (Transaksi)',
-                            data: stdData,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            yAxisID: 'yStd',
-                            tension: 0.3,
-                            fill: true
-                        }
+                        { label: 'SPD (Sales)', data: spdData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', yAxisID: 'ySpd', tension: 0.3, fill: true },
+                        { label: 'STD (Transaksi)', data: stdData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', yAxisID: 'yStd', tension: 0.3, fill: true }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) label += ': ';
-                                    if (context.dataset.yAxisID === 'ySpd') {
-                                        label += formatRupiah(context.parsed.y);
-                                    } else {
-                                        label += context.parsed.y.toLocaleString('id-ID');
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        ySpd: { type: 'linear', position: 'left', title: { display: true, text: 'Rupiah (SPD)' } },
-                        yStd: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Jumlah (STD)' } }
-                    }
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: { tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + (c.dataset.yAxisID === 'ySpd' ? formatRupiah(c.parsed.y) : c.parsed.y.toLocaleString('id-ID')); } } } },
+                    scales: { ySpd: { type: 'linear', position: 'left' }, yStd: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }
                 }
             });
 
-            // 5. RENDER GRAFIK 2 (PRODUK FOKUS)
+            // 6. Render Grafik Produk Fokus
             if (productChartInstance) productChartInstance.destroy();
-
             const ctxProduct = document.getElementById('productChart').getContext('2d');
             productChartInstance = new Chart(ctxProduct, {
                 type: 'bar',
                 data: {
                     labels: Object.keys(produkFokus),
-                    datasets: [{
-                        label: 'Total Terjual',
-                        data: Object.values(produkFokus),
-                        backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'],
-                        borderRadius: 6
-                    }]
+                    datasets: [{ data: Object.values(produkFokus), backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'], borderRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return c.parsed.y.toLocaleString('id-ID') + ' Pcs'; } } } } }
+            });
+
+            // 7. Render Grafik Kategori Retur
+            if (returChartInstance) returChartInstance.destroy();
+            let labelRetur = Object.keys(dataReturKategori);
+            let valueRetur = Object.values(dataReturKategori);
+            let bgColorRetur = ['#ef4444', '#f97316', '#eab308', '#ec4899'];
+
+            if (labelRetur.length === 0) {
+                labelRetur = ["Tidak ada Retur"];
+                valueRetur = [1];
+                bgColorRetur = ['#e5e7eb'];
+            }
+
+            const ctxRetur = document.getElementById('returChart').getContext('2d');
+            returChartInstance = new Chart(ctxRetur, {
+                type: 'doughnut',
+                data: {
+                    labels: labelRetur,
+                    datasets: [{ data: valueRetur, backgroundColor: bgColorRetur, borderWidth: 2, borderColor: '#ffffff' }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y.toLocaleString('id-ID') + ' Pcs';
-                                }
-                            }
-                        }
+                    responsive: true, maintainAspectRatio: false, cutout: '65%',
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } },
+                        tooltip: { callbacks: { label: function(x) { return labelRetur[0] === "Tidak ada Retur" ? " Rp 0" : " " + formatRupiah(x.parsed); } } }
                     }
                 }
             });
         }
 
-        document.addEventListener('DOMContentLoaded', loadData);
+        // Fungsi aksi untuk tombol Salin Teks Template
+        function salinTeksRetur() {
+            const copyText = document.getElementById("textTemplateRetur");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // Kompatibilitas Mobile perangkat
+            navigator.clipboard.writeText(copyText.value);
+            
+            alert("Laporan retur berhasil disalin! Siap dipaste ke WhatsApp.");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            pasangTanggalDefault();
+            loadData();
+        });
     </script>
 </body>
 </html>
