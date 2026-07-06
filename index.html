@@ -222,7 +222,7 @@
     </div>
 
     <script>
-        // PASTIKAN MENGGUNAKAN LINK WEB APP YANG BARU DISINI
+        // MASUKKAN LINK WEB APP GOOGLE SCRIPT ANDA DI SINI
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSzRb3Fh-Bjlb7V8abHTH2JQa5iVWzokB7e3hbcWa6zuZd0zQ_xEe7_j3Ff2JvnldT/exec";
 
         const NAMA_TOKO = "JATILAWANG";
@@ -288,7 +288,7 @@
                 })
                 .catch(error => {
                     console.error("Error mengambil data:", error);
-                    alert("Gagal memuat data operasional.");
+                    alert("Gagal memuat data operasional. Pastikan URL Web App sudah benar dan sudah di-deploy ulang.");
                     document.getElementById('loading').innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data. Silakan coba lagi.</p>`;
                 });
         }
@@ -317,24 +317,33 @@
 
             // 1. PROSES DATA PPS
             dataPPS.forEach(row => {
-                let spd = Number(row.SPD || 0);
+                // Deteksi dinamis agar tahan terhadap salah ketik nama kolom di spreadsheet
+                let keySpd = Object.keys(row).find(k => k.toLowerCase().includes('spd')) || "SPD";
+                let keyStd = Object.keys(row).find(k => k.toLowerCase() === 'std') || "STD";
+                let keyMember = Object.keys(row).find(k => k.toLowerCase().includes('new member')) || "New Member";
+                let keySerba = Object.keys(row).find(k => k.toLowerCase().includes('serba')) || "Serba Gratis";
+
+                let spd = Number(row[keySpd] || row.SPD || 0);
                 totalSpd += spd;
-                totalStd += Number(row.STD || 0);
-                // Sesuaikan nama kolom yang ditarik dengan header spreadsheet
-                totalMember += Number(row["New Member"] || 0);
+                totalStd += Number(row[keyStd] || row.STD || 0);
+                totalMember += Number(row[keyMember] || 0);
 
                 produkFokus.PSM += Number(row.PSM || 0);
                 produkFokus.PWP += Number(row.PWP || 0);
-                produkFokus["Serba Gratis"] += Number(row["Serba Gratis"] || 0);
+                produkFokus["Serba Gratis"] += Number(row[keySerba] || 0);
                 produkFokus.Sueger += Number(row.Sueger || 0);
                 produkFokus.Ceban += Number(row.Ceban || 0);
                 produkFokus.Beanspot += Number(row.Beanspot || 0);
 
-                let dateObj = new Date(row.Tanggal);
-                let tgl = isNaN(dateObj) ? row.Tanggal : dateObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
-                if(!groupedData[tgl]) groupedData[tgl] = { spd: 0, std: 0 };
-                groupedData[tgl].spd += spd;
-                groupedData[tgl].std += Number(row.STD || 0);
+                let keyTgl = Object.keys(row).find(k => k.toLowerCase() === 'tanggal') || "Tanggal";
+                let dateObj = new Date(row[keyTgl]);
+                let tgl = isNaN(dateObj) ? row[keyTgl] : dateObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
+                
+                if (tgl) {
+                    if(!groupedData[tgl]) groupedData[tgl] = { spd: 0, std: 0 };
+                    groupedData[tgl].spd += spd;
+                    groupedData[tgl].std += Number(row[keyStd] || row.STD || 0);
+                }
             });
 
             // 2. PROSES DATA RETUR & TEMPLATE
@@ -353,12 +362,16 @@
             let indexReturText = 1;
 
             dataRetur.forEach(row => {
-                // Menarik data persis dari nama header yang kita buat
-                let nilaiRetur = Number(row["Nilai Retur (Rp)"] || 0);
-                let kategori = row["Kategori Retur"] || "-";
-                let faktur = row["Nomor Faktur"] || "-";
+                // Deteksi canggih: Mencegah error meski judul kolom di excel salah ketik
+                let keyNilai = Object.keys(row).find(k => k.toLowerCase().includes('nilai')) || "Nilai Retur (Rp)";
+                let keyKategori = Object.keys(row).find(k => k.toLowerCase().includes('kategori')) || "Kategori Retur";
+                let keyFaktur = Object.keys(row).find(k => k.toLowerCase().includes('faktur')) || "Nomor Faktur";
 
-                if (kategori === "Rusak/Cacat / BKE") kategori = "BKE";
+                let nilaiRetur = Number(row[keyNilai] || 0);
+                let kategori = row[keyKategori] || "-";
+                let faktur = row[keyFaktur] || "-";
+
+                if (kategori.includes("BKE") || kategori.includes("Rusak")) kategori = "BKE";
 
                 if (nilaiRetur > 0) {
                     totalRetur += nilaiRetur;
