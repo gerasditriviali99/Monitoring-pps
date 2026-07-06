@@ -3,238 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Performa Staf</title>
+    <title>Leaderboard PPS Toko</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen py-6 px-4">
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-5xl mx-auto space-y-6">
         
-        <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm gap-4">
+        <!-- Header & Navigasi -->
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    🏆 Papan Peringkat Staf Toko
-                </h1>
-                <p class="text-sm text-gray-500">Apresiasi untuk performa terbaik tim retail</p>
+                <h1 class="text-2xl font-bold text-gray-800">🏆 Leaderboard Performa</h1>
+                <p class="text-sm text-gray-500">Peringkat kontribusi Staf dan Crew berdasarkan Total Sales (SPD)</p>
             </div>
-            <div class="flex gap-2 w-full sm:w-auto">
-                <a href="index.html" class="flex-1 sm:flex-none text-center bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition">
-                    Form Input
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <a href="index.html" class="text-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow flex-1 md:flex-none">
+                    📊 Dashboard
                 </a>
-                <a href="dashboard.html" class="flex-1 sm:flex-none text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition">
-                    Dashboard
+                <a href="input.html" class="text-center bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition flex-1 md:flex-none">
+                    ➕ Input Data
                 </a>
             </div>
         </div>
 
-        <div class="flex justify-center bg-white p-2 rounded-xl shadow-sm max-w-md mx-auto">
-            <button id="btnFilterProduk" onclick="switchLeaderboard('produk')" class="w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition bg-amber-500 text-white shadow">
-                🔥 Pencapaian Fokus
-            </button>
-            <button id="btnFilterMember" onclick="switchLeaderboard('member')" class="w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition text-gray-600 hover:bg-gray-100">
-                💳 New Member
-            </button>
-        </div>
-
-        <div id="podiumContainer" class="grid grid-cols-3 items-end justify-center max-w-xl mx-auto pt-8 pb-4 gap-2">
-            <div class="flex flex-col items-center">
-                <div id="p2Name" class="text-sm font-bold text-gray-700 text-center truncate w-24">...</div>
-                <div id="p2Score" class="text-xs text-gray-500 font-medium mb-1">0</div>
-                <div class="w-full bg-slate-300 h-28 rounded-t-lg flex flex-col items-center justify-center border-t-4 border-slate-400 shadow-md">
-                    <span class="text-3xl">🥈</span>
-                    <span class="text-xs font-bold text-slate-700 mt-1">2nd</span>
-                </div>
+        <!-- Filter Bar -->
+        <div class="bg-white p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between border-l-4 border-amber-500">
+            <div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                <span class="text-sm font-semibold text-gray-700">Filter Tanggal:</span>
+                <input type="date" id="startDate" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 w-full md:w-auto">
+                <span class="text-sm text-gray-500 hidden md:inline">-</span>
+                <input type="date" id="endDate" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-amber-500 w-full md:w-auto">
             </div>
-            <div class="flex flex-col items-center">
-                <div id="p1Name" class="text-base font-extrabold text-amber-600 text-center truncate w-24">...</div>
-                <div id="p1Score" class="text-sm font-bold text-gray-600 mb-1">0</div>
-                <div class="w-full bg-amber-100 h-36 rounded-t-lg flex flex-col items-center justify-center border-t-4 border-amber-500 shadow-lg relative">
-                    <span class="absolute -top-6 text-2xl animate-bounce">👑</span>
-                    <span class="text-4xl">🥇</span>
-                    <span class="text-sm font-bold text-amber-700 mt-1">1st</span>
-                </div>
-            </div>
-            <div class="flex flex-col items-center">
-                <div id="p3Name" class="text-sm font-bold text-gray-700 text-center truncate w-24">...</div>
-                <div id="p3Score" class="text-xs text-gray-500 font-medium mb-1">0</div>
-                <div class="w-full bg-orange-200 h-20 rounded-t-lg flex flex-col items-center justify-center border-t-4 border-orange-400 shadow-md">
-                    <span class="text-3xl">🥉</span>
-                    <span class="text-xs font-bold text-orange-800 mt-1">3rd</span>
-                </div>
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="applyFilter()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition flex-1 md:flex-none">Terapkan</button>
+                <button onclick="resetFilter()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-lg text-sm font-medium transition flex-1 md:flex-none">Reset</button>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="p-4 border-b bg-gray-50">
-                <h3 class="font-bold text-gray-700 uppercase text-xs tracking-wider">Daftar Peringkat Seluruh Staf</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-600 text-xs uppercase font-semibold">
-                            <th class="py-3 px-4 text-center w-16">Rank</th>
-                            <th class="py-3 px-4">Nama Staf</th>
-                            <th id="tableHeaderScore" class="py-3 px-4 text-right">Total Skor (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardRows" class="text-gray-700 text-sm divide-y">
+        <!-- Loading Spinner -->
+        <div id="loading" class="flex flex-col items-center justify-center py-10 space-y-3">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+            <p class="text-gray-500 text-sm italic">Menghitung peringkat...</p>
+        </div>
+
+        <!-- Kontainer Data -->
+        <div id="dataContainer" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Leaderboard Staf -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="bg-gradient-to-r from-blue-700 to-blue-500 p-4">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        👨‍💼 Top Performer - STAF
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-center">Rank</th>
+                                <th class="px-4 py-3">Nama</th>
+                                <th class="px-4 py-3 text-right">Total SPD</th>
+                                <th class="px-4 py-3 text-right">Rata² APC</th>
+                                <th class="px-4 py-3 text-center">Fokus (PSM+PWP)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyStaf" class="divide-y divide-gray-100">
+                            <!-- Data akan dimuat melalui JavaScript -->
                         </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <div id="loading" class="text-center text-gray-500 text-sm italic py-4">
-            Sedang menghitung peringkat...
-        </div>
+            <!-- Leaderboard Crew -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="bg-gradient-to-r from-emerald-600 to-emerald-400 p-4">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        🧑‍🔧 Top Performer - CREW
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 text-center">Rank</th>
+                                <th class="px-4 py-3">Nama</th>
+                                <th class="px-4 py-3 text-right">Total SPD</th>
+                                <th class="px-4 py-3 text-right">Rata² APC</th>
+                                <th class="px-4 py-3 text-center">Fokus (PSM+PWP)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyCrew" class="divide-y divide-gray-100">
+                            <!-- Data akan dimuat melalui JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
+        </div>
     </div>
 
     <script>
-        // PASTE URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrYY30xFJK76lZD1sNjEsb1itZZIBfCssUrqd1FMTTwJM_xXqWH0rsTT7vbqy1PJp0/exec";
-        
-        // PENTING: Atur target bulanan/mingguan toko di sini untuk perhitungan persentase
-        const TARGET = {
-            PSM: 950,           // Contoh: Target 100 Pcs
-            PWP: 402,            // Contoh: Target 40 Struk
-            SerbaGratis: 311,    // Contoh: Target 50 Promo
-            APC: 70000          // Contoh: Target APC Rp 35.000
-        };
+        // PASTIKAN URL INI SAMA DENGAN YANG ADA DI INDEX.HTML DAN INPUT.HTML
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSzRb3Fh-Bjlb7V8abHTH2JQa5iVWzokB7e3hbcWa6zuZd0zQ_xEe7_j3Ff2JvnldT/exec";
 
-        let globalData = [];
-        let currentMode = 'produk'; // Default mode ranking
-
-        // Mengambil data saat halaman dibuka
-        fetch(WEB_APP_URL)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loading').classList.add('hidden');
-                globalData = data;
-                renderLeaderboard();
-            })
-            .catch(error => {
-                console.error("Error mengambil data:", error);
-                document.getElementById('loading').innerText = "Gagal memproses data papan peringkat.";
-            });
-
-        function switchLeaderboard(mode) {
-            currentMode = mode;
-            
-            // Atur gaya tombol filter aktif/tidak aktif
-            const btnProduk = document.getElementById('btnFilterProduk');
-            const btnMember = document.getElementById('btnFilterMember');
-            
-            if(mode === 'produk') {
-                btnProduk.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition bg-amber-500 text-white shadow";
-                btnMember.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition text-gray-600 hover:bg-gray-100";
-                document.getElementById('tableHeaderScore').innerText = "Total Skor (%)";
-            } else {
-                btnMember.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition bg-purple-600 text-white shadow";
-                btnProduk.className = "w-1/2 py-2 px-4 rounded-lg font-semibold text-sm transition text-gray-600 hover:bg-gray-100";
-                document.getElementById('tableHeaderScore').innerText = "Total New Member";
-            }
-            
-            renderLeaderboard();
+        function formatRupiah(angka) {
+            return "Rp " + Math.round(angka).toLocaleString('id-ID');
         }
 
-        function renderLeaderboard() {
-            if (globalData.length === 0) return;
+        function formatDateLocal(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
 
-            // 1. Kumpulkan Data Aktual (Penjumlahan) Berdasarkan Nama Staf
-            let staffData = {};
+        function pasangTanggalDefault() {
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('startDate').value = formatDateLocal(firstDayOfMonth);
+            document.getElementById('endDate').value = formatDateLocal(today);
+        }
 
-            globalData.forEach(row => {
-                let nama = row.Staf || "Unknown";
-                nama = nama.trim().toUpperCase(); 
+        function loadData() {
+            if (!document.getElementById('startDate').value || !document.getElementById('endDate').value) {
+                pasangTanggalDefault();
+            }
 
-                if (!staffData[nama]) {
-                    staffData[nama] = { 
-                        name: nama, 
-                        aktualPSM: 0, 
-                        aktualPWP: 0, 
-                        aktualGratis: 0, 
-                        aktualAPC: 0, 
-                        member: 0 
-                    };
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('dataContainer').classList.add('hidden');
+
+            const urlDenganFilter = `${WEB_APP_URL}?startDate=${startDate}&endDate=${endDate}`;
+
+            fetch(urlDenganFilter)
+                .then(response => response.json())
+                .then(dataObj => {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('dataContainer').classList.remove('hidden');
+                    prosesLeaderboard(dataObj.pps || []);
+                })
+                .catch(error => {
+                    console.error("Error mengambil data:", error);
+                    alert("Gagal memuat data leaderboard.");
+                    document.getElementById('loading').innerHTML = `<p class="text-red-500 text-sm">Gagal memuat data.</p>`;
+                });
+        }
+
+        function applyFilter() {
+            if (!document.getElementById('startDate').value || !document.getElementById('endDate').value) {
+                alert("Silakan pilih Tanggal Mulai dan Tanggal Akhir.");
+                return;
+            }
+            loadData();
+        }
+
+        function resetFilter() {
+            pasangTanggalDefault();
+            loadData(); 
+        }
+
+        // Fungsi khusus untuk mengelompokkan dan menghitung total berdasarkan peran (Staf / Crew)
+        function generateRanking(data, keyRole) {
+            let recap = {};
+
+            data.forEach(row => {
+                // Antisipasi perbedaan nama header dari Google Sheets
+                let nama = row[keyRole] || row[`Nama ${keyRole}`] || row[`Nama_${keyRole}`];
+                if (!nama || nama === "-" || nama === "") return;
+
+                if (!recap[nama]) {
+                    recap[nama] = { nama: nama, shiftCount: 0, spd: 0, std: 0, psm: 0, pwp: 0 };
                 }
 
-                // Kumpulkan nilai aktual
-                staffData[nama].aktualPSM += Number(row.PSM || 0);
-                staffData[nama].aktualPWP += Number(row.PWP || 0);
-                staffData[nama].aktualGratis += Number(row["Serba Gratis"] || 0);
-                
-                // Khusus APC: Jika setiap baris adalah rangkuman, gunakan nilai APC terbaru.
-                // Jika dari banyak struk, logic-nya perlu disesuaikan. Kita asumsikan nilainya disediakan per staf.
-                staffData[nama].aktualAPC = Number(row.APC || staffData[nama].aktualAPC); 
-                
-                staffData[nama].member += Number(row.New_Member || row["New Member"] || 0);
+                recap[nama].shiftCount += 1;
+                recap[nama].spd += Number(row.SPD || 0);
+                recap[nama].std += Number(row.STD || 0);
+                recap[nama].psm += Number(row.PSM || 0);
+                recap[nama].pwp += Number(row.PWP || 0);
             });
 
-            // 2. Hitung Persentase Bobot Akhir
-            let sortedStaff = Object.values(staffData).map(staf => {
-                
-                // Rumus: (Aktual / Target) * 100 * Bobot
-                let poinPSM = (staf.aktualPSM / TARGET.PSM) * 100 * 0.20;
-                let poinPWP = (staf.aktualPWP / TARGET.PWP) * 100 * 0.25;
-                let poinGratis = (staf.aktualGratis / TARGET.SerbaGratis) * 100 * 0.30;
-                let poinAPC = (staf.aktualAPC / TARGET.APC) * 100 * 0.25;
-
-                // Tangani hasil NaN/Infinity jika target di set 0 secara tidak sengaja
-                let totalSkorPersen = (poinPSM + poinPWP + poinGratis + poinAPC) || 0;
-                
-                // Simpan skor akhir
-                staf.skorProduk = totalSkorPersen; 
-                return staf;
+            // Ubah object menjadi array dan hitung APC
+            let rankedArray = Object.values(recap).map(item => {
+                item.apc = item.std > 0 ? (item.spd / item.std) : 0;
+                item.fokus = item.psm + item.pwp;
+                return item;
             });
 
-            // 3. Sorting berdasarkan pilihan mode
-            if(currentMode === 'produk') {
-                sortedStaff.sort((a, b) => b.skorProduk - a.skorProduk);
-            } else {
-                sortedStaff.sort((a, b) => b.member - a.member);
+            // Urutkan dari SPD Tertinggi ke Terendah
+            rankedArray.sort((a, b) => b.spd - a.spd);
+            return rankedArray;
+        }
+
+        // Fungsi untuk membuat baris HTML tabel
+        function renderTable(rankedArray, tbodyElementId) {
+            const tbody = document.getElementById(tbodyElementId);
+            tbody.innerHTML = "";
+
+            if (rankedArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400 italic">Belum ada data pada periode ini</td></tr>`;
+                return;
             }
 
-            // 4. TAMPILKAN KE PODIUM (TOP 3)
-            const p1 = sortedStaff[0] || { name: "-", skorProduk: 0, member: 0 };
-            const p2 = sortedStaff[1] || { name: "-", skorProduk: 0, member: 0 };
-            const p3 = sortedStaff[2] || { name: "-", skorProduk: 0, member: 0 };
-
-            const unit = currentMode === 'produk' ? '%' : ' Orang';
-
-            document.getElementById('p1Name').innerText = p1.name;
-            document.getElementById('p1Score').innerText = (currentMode === 'produk' ? p1.skorProduk.toFixed(2) : p1.member) + unit;
-
-            document.getElementById('p2Name').innerText = p2.name;
-            document.getElementById('p2Score').innerText = (currentMode === 'produk' ? p2.skorProduk.toFixed(2) : p2.member) + unit;
-
-            document.getElementById('p3Name').innerText = p3.name;
-            document.getElementById('p3Score').innerText = (currentMode === 'produk' ? p3.skorProduk.toFixed(2) : p3.member) + unit;
-
-            // 5. TAMPILKAN KE TABEL LENGKAP
-            const tableBody = document.getElementById('leaderboardRows');
-            tableBody.innerHTML = ""; // Reset isi tabel lama
-
-            sortedStaff.forEach((staf, index) => {
-                let rankDisplay = index + 1;
-                let bgRow = "hover:bg-gray-50";
+            rankedArray.forEach((item, index) => {
+                const rank = index + 1;
                 
-                // Beri warna pembeda tipis untuk baris podium di tabel
-                if(index === 0) bgRow = "bg-amber-50/50 hover:bg-amber-50 font-semibold";
-                if(index === 1) bgRow = "bg-slate-50/50 hover:bg-slate-50";
-                if(index === 2) bgRow = "bg-orange-50/50 hover:bg-orange-50";
+                // Styling visual untuk peringkat 1, 2, dan 3
+                let rankBadge = `<span class="font-bold text-gray-500">${rank}</span>`;
+                let rowStyle = "hover:bg-gray-50 transition";
+                let nameStyle = "font-medium text-gray-700";
 
-                let skorTampil = currentMode === 'produk' ? staf.skorProduk.toFixed(2) : staf.member;
+                if (rank === 1) {
+                    rankBadge = `<span class="inline-block w-6 h-6 rounded-full bg-yellow-400 text-white font-bold leading-6 shadow-sm">1</span>`;
+                    rowStyle = "bg-yellow-50 hover:bg-yellow-100 transition";
+                    nameStyle = "font-bold text-yellow-800";
+                } else if (rank === 2) {
+                    rankBadge = `<span class="inline-block w-6 h-6 rounded-full bg-gray-300 text-gray-700 font-bold leading-6 shadow-sm">2</span>`;
+                    rowStyle = "bg-gray-50 hover:bg-gray-100 transition";
+                    nameStyle = "font-bold text-gray-700";
+                } else if (rank === 3) {
+                    rankBadge = `<span class="inline-block w-6 h-6 rounded-full bg-amber-600 text-white font-bold leading-6 shadow-sm">3</span>`;
+                    rowStyle = "bg-orange-50 hover:bg-orange-100 transition";
+                    nameStyle = "font-bold text-amber-800";
+                }
 
-                let rowHtml = `
-                    <tr class="${bgRow} transition">
-                        <td class="py-3 px-4 text-center font-bold text-gray-500">${rankDisplay}</td>
-                        <td class="py-3 px-4 font-medium text-gray-800">${staf.name}</td>
-                        <td class="py-3 px-4 text-right font-bold text-blue-600">${skorTampil}${unit}</td>
-                    </tr>
+                const tr = document.createElement('tr');
+                tr.className = rowStyle;
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-center whitespace-nowrap">${rankBadge}</td>
+                    <td class="px-4 py-3">
+                        <div class="${nameStyle}">${item.nama}</div>
+                        <div class="text-[10px] text-gray-400">${item.shiftCount} Shift Kerja</div>
+                    </td>
+                    <td class="px-4 py-3 text-right font-semibold text-gray-800">${formatRupiah(item.spd)}</td>
+                    <td class="px-4 py-3 text-right text-gray-600">${formatRupiah(item.apc)}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">${item.fokus}</span>
+                    </td>
                 `;
-                tableBody.innerHTML += rowHtml;
+                tbody.appendChild(tr);
             });
         }
+
+        function prosesLeaderboard(dataPPS) {
+            // Kita cari menggunakan key "Staf" dan "Crew" yang dikirimkan dari Google Sheets
+            const rankStaf = generateRanking(dataPPS, "Staf"); 
+            const rankCrew = generateRanking(dataPPS, "Crew");
+
+            renderTable(rankStaf, "tbodyStaf");
+            renderTable(rankCrew, "tbodyCrew");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            pasangTanggalDefault();
+            loadData();
+        });
     </script>
 </body>
 </html>
