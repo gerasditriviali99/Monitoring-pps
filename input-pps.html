@@ -17,6 +17,7 @@
         <h2 class="text-2xl font-bold text-center text-blue-600 mb-6 uppercase tracking-wider">Form Input Monitoring PPS</h2>
         
         <form id="ppsForm" class="space-y-6">
+            <!-- 1. Data Absensi & Shift -->
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h3 class="text-sm font-semibold text-blue-700 uppercase mb-3">1. Data Absensi & Shift</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -61,6 +62,7 @@
                 </div>
             </div>
 
+            <!-- 2. Performance Utama -->
             <div class="bg-green-50 p-4 rounded-lg border border-green-200">
                 <h3 class="text-sm font-semibold text-green-700 uppercase mb-3">2. Performance Utama</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -79,6 +81,7 @@
                 </div>
             </div>
 
+            <!-- 3. Target Promo & Focus Product -->
             <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <h3 class="text-sm font-semibold text-yellow-700 uppercase mb-3">3. Target Promo & Focus Product</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -109,6 +112,7 @@
                 </div>
             </div>
 
+            <!-- 4. Member & NPS -->
             <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h3 class="text-sm font-semibold text-purple-700 uppercase mb-3">4. Member & NPS</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -134,6 +138,7 @@
     </div>
 
     <script>
+        // Ganti dengan URL Google Apps Script Anda yang terbaru
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSzRb3Fh-Bjlb7V8abHTH2JQa5iVWzokB7e3hbcWa6zuZd0zQ_xEe7_j3Ff2JvnldT/exec";
 
         const inputSPD = document.getElementById('spd');
@@ -162,6 +167,7 @@
             btnSubmit.className = "w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed";
 
             const formData = {
+                jenis_form: "PPS", // Penanda ini form PPS
                 tanggal: document.getElementById('tanggal').value,
                 shift: document.getElementById('shift').value,
                 staf: document.getElementById('staf').value,
@@ -177,11 +183,7 @@
                 beanspot: Number(document.getElementById('beanspot').value || 0),
                 newMember: Number(document.getElementById('newMember').value || 0),
                 stdMember: Number(document.getElementById('stdMember').value || 0),
-                nps: Number(document.getElementById('nps').value || 0),
-                // Default value untuk market retur agar API tidak error
-                kategoriRetur: "-", 
-                fakturRetur: "-", 
-                nilaiRetur: 0 
+                nps: Number(document.getElementById('nps').value || 0)
             };
 
             fetch(WEB_APP_URL, {
@@ -191,7 +193,7 @@
                 body: JSON.stringify(formData)
             })
             .then(() => {
-                alert("Data PPS Berhasil Disimpan ke Google Sheets!");
+                alert("Data PPS Berhasil Disimpan!");
                 document.getElementById('ppsForm').reset();
                 inputAPC.value = ""; 
             })
