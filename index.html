@@ -313,4 +313,200 @@
             let totalSpd = 0, totalStd = 0, totalMember = 0, totalRetur = 0; 
             let produkFokus = { PSM: 0, PWP: 0, "Serba Gratis": 0, Sueger: 0, Ceban: 0, Beanspot: 0 };
             let dataReturKategori = {}; 
-            let groupedData = {};
+            let groupedData = {}; 
+
+            // 1. PROSES DATA PPS
+            dataPPS.forEach(row => {
+                let spd = Number(row.SPD || 0);
+                totalSpd += spd;
+                totalStd += Number(row.STD || 0);
+                // Sesuaikan nama kolom yang ditarik dengan header spreadsheet
+                totalMember += Number(row["New Member"] || 0);
+
+                produkFokus.PSM += Number(row.PSM || 0);
+                produkFokus.PWP += Number(row.PWP || 0);
+                produkFokus["Serba Gratis"] += Number(row["Serba Gratis"] || 0);
+                produkFokus.Sueger += Number(row.Sueger || 0);
+                produkFokus.Ceban += Number(row.Ceban || 0);
+                produkFokus.Beanspot += Number(row.Beanspot || 0);
+
+                let dateObj = new Date(row.Tanggal);
+                let tgl = isNaN(dateObj) ? row.Tanggal : dateObj.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
+                if(!groupedData[tgl]) groupedData[tgl] = { spd: 0, std: 0 };
+                groupedData[tgl].spd += spd;
+                groupedData[tgl].std += Number(row.STD || 0);
+            });
+
+            // 2. PROSES DATA RETUR & TEMPLATE
+            const startDateVal = document.getElementById('startDate').value;
+            const endDateVal = document.getElementById('endDate').value;
+            let tglText = "";
+            if (startDateVal && endDateVal) {
+                const startStr = formatTanggalIndo(startDateVal);
+                const endStr = formatTanggalIndo(endDateVal);
+                tglText = (startStr === endStr) ? startStr : `${startStr} - ${endStr}`;
+            } else {
+                tglText = formatTanggalIndo(new Date());
+            }
+
+            let templateText = `Tgl : ${tglText}\nNama Toko : ${NAMA_TOKO}\nKode toko   : ${KODE_TOKO}\n\n`;
+            let indexReturText = 1;
+
+            dataRetur.forEach(row => {
+                // Menarik data persis dari nama header yang kita buat
+                let nilaiRetur = Number(row["Nilai Retur (Rp)"] || 0);
+                let kategori = row["Kategori Retur"] || "-";
+                let faktur = row["Nomor Faktur"] || "-";
+
+                if (kategori === "Rusak/Cacat / BKE") kategori = "BKE";
+
+                if (nilaiRetur > 0) {
+                    totalRetur += nilaiRetur;
+                    dataReturKategori[kategori] = (dataReturKategori[kategori] || 0) + nilaiRetur;
+
+                    let nilaiFormatted = Math.round(nilaiRetur).toLocaleString('id-ID');
+                    templateText += `${indexReturText}. (${kategori}) ${faktur} ${nilaiFormatted}\n`;
+                    indexReturText++;
+                }
+            });
+
+            if (indexReturText === 1) {
+                templateText += "Tidak ada data retur pada periode ini.\n";
+            } else {
+                templateText += `*TOTAL : ${Math.round(totalRetur).toLocaleString('id-ID')}*`;
+            }
+            document.getElementById('textTemplateRetur').value = templateText;
+
+            // 3. UPDATE KPI & PROGRESS
+            let rataRataApc = totalStd > 0 ? (totalSpd / totalStd) : 0;
+            document.getElementById('kpiSpd').innerText = formatRupiah(totalSpd);
+            document.getElementById('kpiStd').innerText = totalStd.toLocaleString('id-ID');
+            document.getElementById('kpiApc').innerText = formatRupiah(rataRataApc);
+            document.getElementById('kpiMember').innerText = totalMember.toLocaleString('id-ID');
+
+            const apcBadge = document.getElementById('apcBadge');
+            if (rataRataApc >= TARGET_APC_VALUE) {
+                apcBadge.innerText = "ACHIEVED";
+                apcBadge.className = "font-bold px-1.5 py-0.5 rounded text-[9px] bg-green-100 text-green-800";
+            } else {
+                apcBadge.innerText = "UNDER TARGET";
+                apcBadge.className = "font-bold px-1.5 py-0.5 rounded text-[9px] bg-red-100 text-red-800";
+            }
+
+            document.getElementById('kpiRetur').innerText = formatRupiah(totalRetur);
+            let rasioRetur = totalSpd > 0 ? ((totalRetur / totalSpd) * 100).toFixed(2) : 0;
+            let elRasio = document.getElementById('kpiRasioRetur');
+            elRasio.innerText = rasioRetur + "%";
+            elRasio.className = (rasioRetur > 1) ? "text-2xl font-bold text-red-600" : "text-2xl font-bold text-green-600";
+
+            let scorePsm = (produkFokus.PSM / TARGET_PSM_TOTAL) * WEIGHT_PSM || 0;
+            let scorePwp = (produkFokus.PWP / TARGET_PWP_TOTAL) * WEIGHT_PWP || 0;
+            let scoreApc = (rataRataApc / TARGET_APC_VALUE) * WEIGHT_APC || 0;
+            let scoreSerba = (produkFokus["Serba Gratis"] / TARGET_SERBA_TOTAL) * WEIGHT_SERBA || 0;
+            let totalScore = scorePsm + scorePwp + scoreApc + scoreSerba;
+
+            document.getElementById('totalScoreVal').innerText = totalScore.toFixed(1);
+            document.getElementById('scorePsm').innerText = scorePsm.toFixed(1);
+            document.getElementById('scorePwp').innerText = scorePwp.toFixed(1);
+            document.getElementById('scoreApc').innerText = scoreApc.toFixed(1);
+            document.getElementById('scoreSerba').innerText = scoreSerba.toFixed(1);
+            document.getElementById('scorePsm').className = scorePsm >= WEIGHT_PSM ? "text-green-300" : "text-white";
+            document.getElementById('scorePwp').className = scorePwp >= WEIGHT_PWP ? "text-green-300" : "text-white";
+            document.getElementById('scoreApc').className = scoreApc >= WEIGHT_APC ? "text-green-300" : "text-white";
+            document.getElementById('scoreSerba').className = scoreSerba >= WEIGHT_SERBA ? "text-green-300" : "text-white";
+
+            const scoreStatus = document.getElementById('scoreStatus');
+            if (totalScore >= 100) {
+                scoreStatus.innerText = "🔥 OVER TARGET";
+                scoreStatus.className = "text-xs font-bold text-indigo-900 mt-1 bg-gradient-to-r from-yellow-300 to-yellow-500 px-3 py-1 rounded-full text-center inline-block shadow";
+            } else if (totalScore >= 90) {
+                scoreStatus.innerText = "🌟 EXCELLENT";
+                scoreStatus.className = "text-xs font-bold text-green-800 mt-1 bg-green-300 px-3 py-1 rounded-full text-center inline-block";
+            } else if (totalScore >= 70) {
+                scoreStatus.innerText = "👍 GOOD";
+                scoreStatus.className = "text-xs font-bold text-yellow-800 mt-1 bg-yellow-300 px-3 py-1 rounded-full text-center inline-block";
+            } else {
+                scoreStatus.innerText = "⚠️ NEED IMPROVEMENT";
+                scoreStatus.className = "text-xs font-bold text-red-800 mt-1 bg-red-300 px-3 py-1 rounded-full text-center inline-block";
+            }
+
+            let psmPct = ((produkFokus.PSM / TARGET_PSM_TOTAL) * 100).toFixed(1);
+            let pwpPct = ((produkFokus.PWP / TARGET_PWP_TOTAL) * 100).toFixed(1);
+            let serbaPct = ((produkFokus["Serba Gratis"] / TARGET_SERBA_TOTAL) * 100).toFixed(1);
+            document.getElementById('psmAktual').innerText = produkFokus.PSM.toLocaleString('id-ID');
+            document.getElementById('pwpAktual').innerText = produkFokus.PWP.toLocaleString('id-ID');
+            document.getElementById('serbaAktual').innerText = produkFokus["Serba Gratis"].toLocaleString('id-ID');
+            document.getElementById('psmBadge').innerText = psmPct + "%";
+            document.getElementById('pwpBadge').innerText = pwpPct + "%";
+            document.getElementById('serbaBadge').innerText = serbaPct + "%";
+
+            setTimeout(() => {
+                document.getElementById('psmBar').style.width = Math.min(psmPct, 100) + "%";
+                document.getElementById('pwpBar').style.width = Math.min(pwpPct, 100) + "%";
+                document.getElementById('serbaBar').style.width = Math.min(serbaPct, 100) + "%";
+            }, 50);
+
+            // 4. RENDER GRAFIK
+            let sortedDates = Object.keys(groupedData).sort(); 
+            let spdData = sortedDates.map(tgl => groupedData[tgl].spd);
+            let stdData = sortedDates.map(tgl => groupedData[tgl].std);
+
+            if (trendChartInstance) trendChartInstance.destroy();
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [
+                        { label: 'SPD', data: spdData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', yAxisID: 'ySpd', tension: 0.3, fill: true },
+                        { label: 'STD', data: stdData, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', yAxisID: 'yStd', tension: 0.3, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: { tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + (c.dataset.yAxisID === 'ySpd' ? formatRupiah(c.parsed.y) : c.parsed.y.toLocaleString('id-ID')); } } } },
+                    scales: { ySpd: { type: 'linear', position: 'left' }, yStd: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }
+                }
+            });
+
+            if (productChartInstance) productChartInstance.destroy();
+            const ctxProduct = document.getElementById('productChart').getContext('2d');
+            productChartInstance = new Chart(ctxProduct, {
+                type: 'bar',
+                data: { labels: Object.keys(produkFokus), datasets: [{ data: Object.values(produkFokus), backgroundColor: ['#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'], borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return c.parsed.y.toLocaleString('id-ID') + ' Pcs'; } } } } }
+            });
+
+            if (returChartInstance) returChartInstance.destroy();
+            let labelRetur = Object.keys(dataReturKategori);
+            let valueRetur = Object.values(dataReturKategori);
+            let bgColorRetur = ['#ef4444', '#f97316', '#eab308', '#ec4899'];
+
+            if (labelRetur.length === 0) { labelRetur = ["Tidak ada Retur"]; valueRetur = [1]; bgColorRetur = ['#e5e7eb']; }
+
+            const ctxRetur = document.getElementById('returChart').getContext('2d');
+            returChartInstance = new Chart(ctxRetur, {
+                type: 'doughnut',
+                data: { labels: labelRetur, datasets: [{ data: valueRetur, backgroundColor: bgColorRetur, borderWidth: 2, borderColor: '#ffffff' }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '65%',
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } }, tooltip: { callbacks: { label: function(x) { return labelRetur[0] === "Tidak ada Retur" ? " Rp 0" : " " + formatRupiah(x.parsed); } } } }
+                }
+            });
+        }
+
+        function salinTeksRetur() {
+            const copyText = document.getElementById("textTemplateRetur");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(copyText.value);
+            alert("Laporan retur berhasil disalin! Siap dipaste ke WhatsApp.");
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            pasangTanggalDefault();
+            loadData();
+        });
+    </script>
+</body>
+</html>
