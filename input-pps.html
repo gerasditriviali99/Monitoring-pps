@@ -17,7 +17,6 @@
         <h2 class="text-2xl font-bold text-center text-blue-600 mb-6 uppercase tracking-wider">Form Input Monitoring PPS</h2>
         
         <form id="ppsForm" class="space-y-6">
-            <!-- 1. Data Absensi & Shift -->
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h3 class="text-sm font-semibold text-blue-700 uppercase mb-3">1. Data Absensi & Shift</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -62,17 +61,19 @@
                 </div>
             </div>
 
-            <!-- 2. Performance Utama -->
             <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h3 class="text-sm font-semibold text-green-700 uppercase mb-3">2. Performance Utama</h3>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-semibold text-green-700 uppercase">2. Performance Utama</h3>
+                    <span id="shiftWarning" class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded hidden">*Hanya diisi oleh Shift 2</span>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">SPD (Sales Per Day)</label>
-                        <input type="number" id="spd" min="0" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
+                        <input type="number" id="spd" min="0" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none transition-colors">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">STD (Service Trans. Daily)</label>
-                        <input type="number" id="std" min="0" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none">
+                        <input type="number" id="std" min="0" placeholder="0" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-green-400 outline-none transition-colors">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">APC (Otomatis)</label>
@@ -81,7 +82,6 @@
                 </div>
             </div>
 
-            <!-- 3. Target Promo & Focus Product -->
             <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <h3 class="text-sm font-semibold text-yellow-700 uppercase mb-3">3. Target Promo & Focus Product</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -112,7 +112,6 @@
                 </div>
             </div>
 
-            <!-- 4. Member & NPS -->
             <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h3 class="text-sm font-semibold text-purple-700 uppercase mb-3">4. Member & NPS</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -144,6 +143,11 @@
         const inputSPD = document.getElementById('spd');
         const inputSTD = document.getElementById('std');
         const inputAPC = document.getElementById('apc');
+        const selectShift = document.getElementById('shift');
+        const shiftWarning = document.getElementById('shiftWarning');
+
+        // Set tanggal default ke hari ini
+        document.getElementById('tanggal').value = new Date().toLocaleDateString('en-CA');
 
         function hitungAPC() {
             const spd = parseFloat(inputSPD.value) || 0;
@@ -157,6 +161,47 @@
 
         inputSPD.addEventListener('input', hitungAPC);
         inputSTD.addEventListener('input', hitungAPC);
+
+        // LOGIKA KUNCI SHIFT: Hanya Shift 2 yang bisa mengisi SPD dan STD
+        selectShift.addEventListener('change', function() {
+            if (this.value === "Shift 1" || this.value === "Shift 3") {
+                // Nonaktifkan form
+                inputSPD.disabled = true;
+                inputSTD.disabled = true;
+                
+                // Hapus validasi wajib (required)
+                inputSPD.required = false;
+                inputSTD.required = false;
+                
+                // Kosongkan nilai
+                inputSPD.value = "";
+                inputSTD.value = "";
+                hitungAPC();
+                
+                // Ubah tampilan menjadi abu-abu
+                inputSPD.classList.add('bg-gray-100', 'cursor-not-allowed', 'text-gray-500');
+                inputSTD.classList.add('bg-gray-100', 'cursor-not-allowed', 'text-gray-500');
+                
+                // Munculkan peringatan
+                shiftWarning.classList.remove('hidden');
+                
+            } else {
+                // Aktifkan form (Shift 2 atau kosong)
+                inputSPD.disabled = false;
+                inputSTD.disabled = false;
+                
+                // Kembalikan validasi wajib
+                inputSPD.required = true;
+                inputSTD.required = true;
+                
+                // Hapus tampilan abu-abu
+                inputSPD.classList.remove('bg-gray-100', 'cursor-not-allowed', 'text-gray-500');
+                inputSTD.classList.remove('bg-gray-100', 'cursor-not-allowed', 'text-gray-500');
+                
+                // Sembunyikan peringatan
+                shiftWarning.classList.add('hidden');
+            }
+        });
 
         document.getElementById('ppsForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -195,6 +240,10 @@
             .then(() => {
                 alert("Data PPS Berhasil Disimpan!");
                 document.getElementById('ppsForm').reset();
+                
+                // Reset tanggal dan logic shift
+                document.getElementById('tanggal').value = new Date().toLocaleDateString('en-CA');
+                selectShift.dispatchEvent(new Event('change'));
                 inputAPC.value = ""; 
             })
             .catch(error => {
